@@ -5,16 +5,42 @@ from datetime import datetime
 from aiohttp import web
 from aiohttp.web import Response
 from aiohttp_sse import sse_response
+import aioredis
+
+
+async def setup_redis(app):
+    REDIS_HOST = 'localhost'
+    REDIS_PORT = 6379
+
+    pool = await aioredis.create_redis_pool((
+        REDIS_HOST,
+        REDIS_PORT
+    ))
+
+    async def close_redis(app):
+        pool.close()
+        await pool.wait_closed()
+
+    app.on_cleanup.append(close_redis)
+    app['redis_pool'] = pool
+    return pool
 
 
 async def hello(request):
     return web.Response(text="Hello, world")
 
 async def show_date(request):
-    # loop = request.app.loop
+    redis = request.app['redis_pool']
+    await redis.psetex('my-key', 3000, 'value')
+    await asyncio.sleep(0.3)
+
     async with sse_response(request) as resp:
         while True:
-            data = 'Server Time : {}'.format(datetime.now())
+            # data = 'Server Time : {}'.format(datetime.now())
+            # await redis.set('my-key', 'value')
+            # data = await redis.get('my-key')
+            data = await redis.pttl('my-key')
+            data = str(data)
             print(data)
             await resp.send(data)
             await asyncio.sleep(1)
@@ -46,6 +72,7 @@ def setup_routes(app):
 async def init_app():
     app = web.Application()
     setup_routes(app)
+    await setup_redis(app)
     return app
 
 def main():
