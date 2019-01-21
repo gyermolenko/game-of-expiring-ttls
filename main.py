@@ -6,12 +6,9 @@ from aiohttp import web
 from aiohttp.web import Response
 from aiohttp_sse import sse_response
 import aioredis
-
+from settings import REDIS_HOST, REDIS_PORT
 
 async def setup_redis(app):
-    REDIS_HOST = 'localhost'
-    REDIS_PORT = 6379
-
     pool = await aioredis.create_redis_pool((
         REDIS_HOST,
         REDIS_PORT
