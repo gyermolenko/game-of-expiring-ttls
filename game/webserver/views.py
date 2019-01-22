@@ -1,31 +1,25 @@
 import asyncio
 
-from aiohttp import web
-
 from aiohttp.web import Response
 from aiohttp_sse import sse_response
-from datetime import datetime
+from game import db
+
+SLEEP_FOR = 3
 
 
-async def hello(request):
-    return web.Response(text="Hello, world")
-
-
-async def show_date(request):
+async def tasks(request):
     redis = request.app['redis_pool']
-    await redis.psetex('my-key', 3000, 'value')
-    await asyncio.sleep(0.3)
+    # await redis.psetex('my-key', 3000, 'value')
 
     async with sse_response(request) as resp:
         while True:
-            # data = 'Server Time : {}'.format(datetime.now())
-            # await redis.set('my-key', 'value')
-            # data = await redis.get('my-key')
-            data = await redis.pttl('my-key')
+            data = await db.read_tasks_by_mask(redis, 4, 4)
+            # data = await redis.pttl('my-key')
+
             data = str(data)
             print(data)
             await resp.send(data)
-            await asyncio.sleep(1)
+            await asyncio.sleep(SLEEP_FOR)
     return resp
 
 
@@ -34,7 +28,7 @@ async def index(request):
         <html>
         <body>
             <script>
-                var evtSource = new EventSource("/date");
+                var evtSource = new EventSource("/tasks");
                 evtSource.onmessage = function(e) {
                     document.getElementById('response').innerText = e.data
                 }
@@ -45,3 +39,5 @@ async def index(request):
     </html>
     """
     return Response(text=d, content_type='text/html')
+
+

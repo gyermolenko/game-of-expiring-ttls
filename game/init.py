@@ -5,50 +5,32 @@ Number of players: 20,000 (20K) (distributed randomly)
 Origin (0x0) is top left.
 """
 
-import asyncio
-import logging
-
 import aioredis
 
-from game.settings import NPLAYERS
-from game.settings import REDIS_HOST, REDIS_PORT
-from game.settings import PLAYERS
+from game import db
+from game import settings
 from game.utils import generate_players_coords
-
-
-async def save_players(conn, coords):
-    val = await conn.sadd(PLAYERS, *coords)
-    logging.debug(f"save_players: {val}")
-    return val
-
-
-async def reset_players(conn):
-    val = await conn.delete(PLAYERS)
-    logging.debug(f"reset_players: {val}")
-    return val
-
-
-async def read_players(conn):
-    val = await conn.smembers(PLAYERS)
-    logging.debug(f"read_players: {val}")
-    return val
 
 
 async def main():
     conn = await aioredis.create_redis((
-        REDIS_HOST,
-        REDIS_PORT
-    ))
+        settings.REDIS_HOST,
+        settings.REDIS_PORT
+    ), encoding='utf-8')
 
-    coords = generate_players_coords(NPLAYERS)
+    coords = generate_players_coords(settings.NPLAYERS)
     player_tpl = '{}x{}'
     coords_as_str = [player_tpl.format(*tpl) for tpl in coords]
 
-    val = await reset_players(conn)
-    val = await read_players(conn)
-    val = await save_players(conn, coords_as_str)
-    val = await read_players(conn)
+    val = await db.reset_players(conn)
+    val = await db.read_players(conn)
+    val = await db.save_players(conn, coords_as_str)
+    val = await db.read_players(conn)
 
 
 if __name__ == '__main__':
+    import asyncio
+    import uvloop
+    asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+
     asyncio.run(main())
