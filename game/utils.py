@@ -1,6 +1,6 @@
 import random
 import logging
-from settings import WIDTH, HEIGHT, NPLAYERS
+from game.settings import WIDTH, HEIGHT, NPLAYERS
 
 logging.basicConfig(level=logging.DEBUG)
 
