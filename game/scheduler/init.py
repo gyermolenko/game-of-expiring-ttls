@@ -7,10 +7,19 @@ Origin (0x0) is top left.
 
 import aioredis
 
-from game import db
 from game import settings
-from game.utils import generate_players_coords
+from game.scheduler import db
+from game.scheduler.utils import generate_players_coords
 
+
+# def zfill_with_zeros(coords):
+#     player_tpl = "{}x{}"
+#     coords_as_str = []
+#     for tpl in coords:
+#         x = str(tpl[0]).zfill(3)
+#         y = str(tpl[1]).zfill(3)
+#         coords_as_str.append(player_tpl.format(x, y))
+#     return coords_as_str
 
 async def main():
     conn = await aioredis.create_redis((
@@ -19,18 +28,12 @@ async def main():
     ), encoding='utf-8')
 
     coords = generate_players_coords(settings.NPLAYERS)
-    player_tpl = '{}x{}'
-    coords_as_str = [player_tpl.format(*tpl) for tpl in coords]
+    # coords_as_str = zfill_with_zeros(coords)
 
-    val = await db.reset_players(conn)
-    val = await db.read_players(conn)
-    val = await db.save_players(conn, coords_as_str)
-    val = await db.read_players(conn)
+    val = await db.flush(conn)
+    val = await db.save_players(conn, coords)
 
 
 if __name__ == '__main__':
     import asyncio
-    import uvloop
-    asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-
     asyncio.run(main())

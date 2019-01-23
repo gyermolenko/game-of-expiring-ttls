@@ -1,7 +1,10 @@
 REDIS_HOST = 'localhost'
 REDIS_PORT = 6379
 
-WIDTH, HEIGHT = 5, 5
-NPLAYERS = 4
+WIDTH, HEIGHT = 512, 512
+NPLAYERS = 20
+# WINDOW_WIDTH = 32
+WINDOW_WIDTH = 100
 
-PLAYERS = 'players'
+PLAYERS_BY_X = "players_by_x"
+PLAYERS_BY_Y = "players_by_y"

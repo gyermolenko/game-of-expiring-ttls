@@ -1,23 +1,45 @@
 import asyncio
+import logging
 
 from aiohttp.web import Response
 from aiohttp_sse import sse_response
-from game import db
+from game.webserver import db
 
-SLEEP_FOR = 3
+SLEEP_FOR = 2
+
+
+def prepare_response(data):
+    """Format
+
+        [('1x3:t2', 304500), ('1x4:t2', 96501), ('3x1:t2', 49501)]
+
+    into
+
+        <p>1x3:t2 : 304500</p>
+        <p>1x4:t2 : 96501</p>
+        <p>3x1:t2 : 49501</p>
+
+    """
+    line_tpl = "{} : {}<br>"
+    res_str = ""
+    for item in sorted(data):
+        res_str += line_tpl.format(*item)
+    return res_str
 
 
 async def tasks(request):
     redis = request.app['redis_pool']
-    # await redis.psetex('my-key', 3000, 'value')
 
     async with sse_response(request) as resp:
         while True:
-            data = await db.read_tasks_by_mask(redis, 4, 4)
-            # data = await redis.pttl('my-key')
+            # t0 = time.time()
+            data = await db.read_tasks_from_nearby_players(redis)
+            # logging.debug(f"time spent: {time.time() - t0}")
 
-            data = str(data)
-            print(data)
+            data = prepare_response(data)
+
+            logging.debug('-' * 80)
+            logging.debug(data)
             await resp.send(data)
             await asyncio.sleep(SLEEP_FOR)
     return resp
@@ -30,14 +52,12 @@ async def index(request):
             <script>
                 var evtSource = new EventSource("/tasks");
                 evtSource.onmessage = function(e) {
-                    document.getElementById('response').innerText = e.data
+                    document.getElementById('response').innerHTML = e.data
                 }
             </script>
-            <h1>Response from server:</h1>
+            <h2>Tasks (name : ttl):</h2>
             <div id="response"></div>
         </body>
     </html>
     """
     return Response(text=d, content_type='text/html')
-
-

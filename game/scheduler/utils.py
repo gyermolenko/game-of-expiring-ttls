@@ -1,6 +1,7 @@
 import random
 import logging
-from game.settings import WIDTH, HEIGHT, NPLAYERS
+from game import settings
+from itertools import chain
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -14,7 +15,7 @@ def generate_one_coords_pair(width, height):
 def generate_players_coords(n):
     coords = []
     while len(coords) < n:
-        pair = generate_one_coords_pair(WIDTH, HEIGHT)
+        pair = generate_one_coords_pair(settings.WIDTH, settings.HEIGHT)
         if pair not in coords:
             coords.append(pair)
 
@@ -23,4 +24,4 @@ def generate_players_coords(n):
 
 
 if __name__ == '__main__':
-    coords = generate_players_coords(NPLAYERS)
+    coords = generate_players_coords(settings.NPLAYERS)
