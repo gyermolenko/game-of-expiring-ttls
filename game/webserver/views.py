@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import time
 
 from aiohttp.web import Response
 from aiohttp_sse import sse_response
@@ -32,13 +33,15 @@ async def tasks(request):
 
     async with sse_response(request) as resp:
         while True:
-            # t0 = time.time()
+
+            t0 = time.time()
             data = await db.read_tasks_from_nearby_players(redis)
-            # logging.debug(f"time spent: {time.time() - t0}")
+            logging.info(f"tasks qty: {len(data)}")
+            logging.info(f"--TIME-- response: {time.time() - t0}")
 
             data = prepare_response(data)
 
-            logging.debug('-' * 80)
+            logging.info('-' * 80)
             logging.debug(data)
             await resp.send(data)
             await asyncio.sleep(SLEEP_FOR)

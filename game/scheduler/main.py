@@ -9,7 +9,6 @@ For each player start generating new tasks following such rules:
  """
 
 import logging
-import random
 
 import aioredis
 
@@ -17,7 +16,7 @@ from game import settings
 from game.scheduler import db
 from game.scheduler.init import main as initer
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=settings.LOGGING_LEVEL)
 
 SLEEP_FOR = 5
 
@@ -30,15 +29,14 @@ async def main():
     players = await db.read_players(conn)
 
     while True:
-        for pid in players:
-            await db.create_task(conn, pid)
-        logging.debug('-'*80)
+        futs = [db.create_task(conn, pid) for pid in players]
+        await asyncio.gather(*futs)
+        logging.info('-'*80)
         await asyncio.sleep(SLEEP_FOR)
 
 if __name__ == '__main__':
     import asyncio
     import uvloop
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-
     asyncio.run(initer())
     asyncio.run(main())

@@ -1,9 +1,6 @@
 import random
 import logging
 from game import settings
-from itertools import chain
-
-logging.basicConfig(level=logging.DEBUG)
 
 
 def generate_one_coords_pair(width, height):

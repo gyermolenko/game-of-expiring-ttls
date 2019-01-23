@@ -20,9 +20,9 @@ async def save_players(conn, coords):
     xscore_member = [(tpl[0], f"{tpl[0]}x{tpl[1]}") for tpl in coords]
     yscore_member = [(tpl[1], f"{tpl[0]}x{tpl[1]}") for tpl in coords]
     val = await conn.zadd(settings.PLAYERS_BY_X, *chain(*xscore_member))
-    logging.debug(f"PLAYERS_BY_X: {val}")
+    logging.info(f"PLAYERS_BY_X: {val}")
     val = await conn.zadd(settings.PLAYERS_BY_Y, *chain(*yscore_member))
-    logging.debug(f"PLAYERS_BY_Y: {val}")
+    logging.info(f"PLAYERS_BY_Y: {val}")
 
 
 async def create_task(conn, player_id):
@@ -37,10 +37,10 @@ async def create_task(conn, player_id):
         task_name = f"{player_id}:t{idx}"
 
         await conn.psetex(task_name, ttl * 1000, "_")
-        logging.debug(f"create_task: `{task_name}`, ttl: {ttl}s")
+        # logging.debug(f"create_task: `{task_name}`, ttl: {ttl}s")
 
         await conn.rpush(tasks_list, task_name)
-        logging.debug(f"append task `{task_name}` to `{tasks_list}`")
+        # logging.debug(f"append task `{task_name}` to `{tasks_list}`")
 
         return
 

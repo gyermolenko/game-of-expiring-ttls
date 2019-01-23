@@ -5,14 +5,14 @@ import aioredis
 import uvloop
 from aiohttp import web
 
-from game.settings import REDIS_HOST, REDIS_PORT
+from game import settings
 from game.webserver.routes import setup_routes
 
 
 async def setup_redis(app):
     pool = await aioredis.create_redis_pool((
-        REDIS_HOST,
-        REDIS_PORT
+        settings.REDIS_HOST,
+        settings.REDIS_PORT
     ), encoding='utf-8')
 
     async def close_redis(app):
@@ -32,7 +32,7 @@ async def init_app():
 
 
 def main():
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=settings.LOGGING_LEVEL)
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
     app = init_app()
     web.run_app(app)
