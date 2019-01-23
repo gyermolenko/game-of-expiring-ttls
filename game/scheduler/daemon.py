@@ -19,7 +19,7 @@ from game.scheduler.init import main as initer
 
 logging.basicConfig(level=logging.DEBUG)
 
-SLEEP_FOR = 60
+SLEEP_FOR = 5
 
 async def main():
     conn = await aioredis.create_redis((
@@ -29,12 +29,11 @@ async def main():
 
     players = await db.read_players(conn)
 
-    # while True:
-    for p in players:
-        ttl = random.randrange(10, 10*60)
-        await db.create_task(conn, p, ttl)
-        # logging.debug('-'*80)
-        # await asyncio.sleep(SLEEP_FOR)
+    while True:
+        for pid in players:
+            await db.create_task(conn, pid)
+        logging.debug('-'*80)
+        await asyncio.sleep(SLEEP_FOR)
 
 if __name__ == '__main__':
     import asyncio

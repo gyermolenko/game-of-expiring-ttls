@@ -1,3 +1,4 @@
+import random
 from itertools import chain
 
 from game import settings
@@ -24,9 +25,23 @@ async def save_players(conn, coords):
     logging.debug(f"PLAYERS_BY_Y: {val}")
 
 
-async def create_task(conn, player_id, ttl):
-    # todo: t1 only
-    key = f"{player_id}:t1"
-    val = await conn.psetex(key, ttl*1000, "_")
-    logging.debug(f"create_task: `{key}`, ttl: {ttl}s")
-    return val
+async def create_task(conn, player_id):
+    # todo: remove expired tasks from task_list
+
+    ttl = random.randrange(10, 10 * 60)
+
+    tasks_list = f"tasks:{player_id}"
+    ln = await conn.llen(tasks_list)
+    if 0 <= ln < 4:
+        idx = ln + 1
+        task_name = f"{player_id}:t{idx}"
+
+        await conn.psetex(task_name, ttl * 1000, "_")
+        logging.debug(f"create_task: `{task_name}`, ttl: {ttl}s")
+
+        await conn.rpush(tasks_list, task_name)
+        logging.debug(f"append task `{task_name}` to `{tasks_list}`")
+
+        return
+
+    logging.debug(f"skip task creation. `{tasks_list}` is full")

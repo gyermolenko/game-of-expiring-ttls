@@ -33,7 +33,7 @@ async def find_tasks(conn, players):
     # todo: blocking loop
     tasks = []
     for pid in players:
-        match = f"{pid}*"
+        match = f"{pid}:*"
         pid_tasks = [key async for key in conn.iscan(match=match)]
         logging.debug(f"pid_tasks: {pid} {pid_tasks}")
         tasks.extend(pid_tasks)
