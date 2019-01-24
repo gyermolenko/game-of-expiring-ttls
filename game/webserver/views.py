@@ -5,8 +5,7 @@ import time
 from aiohttp.web import Response
 from aiohttp_sse import sse_response
 from game.webserver import db
-
-SLEEP_FOR = 2
+from game import settings
 
 
 def prepare_response(data):
@@ -44,7 +43,7 @@ async def tasks(request):
             logging.info('-' * 80)
             logging.debug(data)
             await resp.send(data)
-            await asyncio.sleep(SLEEP_FOR)
+            await asyncio.sleep(settings.PAGE_REFRESH_RATE)
     return resp
 
 

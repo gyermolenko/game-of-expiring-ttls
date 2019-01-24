@@ -4,5 +4,3 @@ aiohttp
 aiohttp-sse
 aioredis
 uvloop
-pytest
-pytest-aiohttp

@@ -30,7 +30,8 @@ async def create_task(conn, player_id):
 
     ttl = random.randrange(10, 10 * 60)
 
-    tasks_list = f"tasks:{player_id}"
+    # tasks_list = f"tasks:{player_id}"
+    tasks_list = settings.TASKS_LIST_TPL.format(player_id)
     ln = await conn.llen(tasks_list)
     if 0 <= ln < 4:
         idx = ln + 1

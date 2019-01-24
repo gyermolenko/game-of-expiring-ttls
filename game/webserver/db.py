@@ -33,19 +33,30 @@ async def find_players_in_view(conn, x=0, y=0):
     return players
 
 
+async def get_player_tasks_v1(conn, pid):
+    t0 = time.time()
+
+    match = f"{pid}:t*"
+    pid_tasks = [key async for key in conn.iscan(match=match, count=5_000)]
+    logging.debug(f"pid_tasks: {pid} {pid_tasks}")
+
+    logging.info(f"--TIME-- get_player_tasks_v1: {time.time() - t0}")
+    return pid_tasks
+
+
+async def get_player_tasks_v2(conn, pid):
+    t0 = time.time()
+
+    pid_tasks_name = settings.TASKS_LIST_TPL.format(pid)
+    pid_tasks = await conn.lrange(pid_tasks_name, 0, -1)
+    logging.debug(f"pid_tasks: {pid} {pid_tasks}")
+
+    logging.info(f"--TIME-- get_player_tasks_v2: {time.time() - t0}")
+    return pid_tasks
+
+
 async def find_tasks(conn, players):
-
-    async def get_player_tasks(pid):
-        # t0 = time.time()
-
-        match = f"{pid}:t*"
-        pid_tasks = [key async for key in conn.iscan(match=match, count=10_000)]
-        logging.debug(f"pid_tasks: {pid} {pid_tasks}")
-
-        # logging.info(f"--TIME-- get_player_tasks: {time.time() - t0}")
-        return pid_tasks
-
-    futs = [get_player_tasks(pid) for pid in players]
+    futs = [get_player_tasks_v2(conn, pid) for pid in players]
     lists_of_tasks = await asyncio.gather(*futs)
 
     tasks = list(chain(*lists_of_tasks))
@@ -54,7 +65,7 @@ async def find_tasks(conn, players):
 
 
 async def append_ttls(conn, tasks):
-    # todo: blocking loop
+    # todo: blocking loop, but fast enough
     pairs = []
     for t in tasks:
         ttl = await conn.ttl(t)
@@ -66,7 +77,8 @@ async def read_tasks_from_nearby_players(conn, x=0, y=0):
 
     players = await find_players_in_view(conn, x=0, y=0)
 
-    tasks = await find_tasks(conn, players)  # todo: too slow
+    # todo: BOTTLENECK
+    tasks = await find_tasks(conn, players)
 
     pairs = await append_ttls(conn, tasks)
 
