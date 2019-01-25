@@ -28,14 +28,14 @@ def prepare_response(data):
 
 
 async def tasks(request):
-    redis = request.app['redis_pool']
+    conn = request.app['redis_pool']
 
     async with sse_response(request) as resp:
         while True:
 
             t0 = time.time()
-            data = await db.read_tasks_from_nearby_players(redis)
-            logging.info(f"tasks qty: {len(data)}")
+            data = await db.read_tasks_from_nearby_players(conn, x=0, y=0)
+            logging.info(f"--tasks qty--: {len(data)}")
             logging.info(f"--TIME-- response: {time.time() - t0}")
 
             data = prepare_response(data)

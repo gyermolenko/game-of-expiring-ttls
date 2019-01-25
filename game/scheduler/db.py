@@ -26,16 +26,14 @@ async def save_players(conn, coords):
 
 
 async def create_task(conn, player_id):
-    # todo: remove expired tasks from task_list
-
+    # todo: scheduler logic is not like required in description
     ttl = random.randrange(10, 10 * 60)
 
-    # tasks_list = f"tasks:{player_id}"
     tasks_list = settings.TASKS_LIST_TPL.format(player_id)
     ln = await conn.llen(tasks_list)
     if 0 <= ln < 4:
         idx = ln + 1
-        task_name = f"{player_id}:t{idx}"
+        task_name = settings.TASK_NAME_TPL.format(player_id=player_id, idx=idx)
 
         await conn.psetex(task_name, ttl * 1000, "_")
         # logging.debug(f"create_task: `{task_name}`, ttl: {ttl}s")

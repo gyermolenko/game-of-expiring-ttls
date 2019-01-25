@@ -35,6 +35,7 @@ Possible improvements
 
 Redis structures
 ================
+Could be configured from `settings.py`
 
 **Players**
 

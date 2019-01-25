@@ -65,7 +65,7 @@ async def find_tasks(conn, players):
 
 
 async def append_ttls(conn, tasks):
-    # todo: blocking loop, but fast enough
+    # todo: get rid of blocking loop
     pairs = []
     for t in tasks:
         ttl = await conn.ttl(t)
@@ -75,9 +75,8 @@ async def append_ttls(conn, tasks):
 async def read_tasks_from_nearby_players(conn, x=0, y=0):
     # todo: x,y are not top-left but rather center where player with view is
 
-    players = await find_players_in_view(conn, x=0, y=0)
+    players = await find_players_in_view(conn, x=x, y=y)
 
-    # todo: BOTTLENECK
     tasks = await find_tasks(conn, players)
 
     pairs = await append_ttls(conn, tasks)
