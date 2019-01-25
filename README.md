@@ -18,13 +18,14 @@ $ python -m game.webserver.main
 ```
 
 ```
-$ python game/scheduler/main.py
+$ python -m game.scheduler.main
 ```
 
 Results
 =======
-Params: 20k players, 32x32 view, ~80k tasks total, ~300 tasks running
-Request-Response time: ~0.25s
+Params: 20k players, 32x32 view, ~80k tasks total, ~350 tasks running
+
+Request-Response time: ~0.04s
 
 Possible improvements 
 ---------------------

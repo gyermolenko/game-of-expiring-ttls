@@ -8,17 +8,21 @@ For each player start generating new tasks following such rules:
  - if the maximum number of tasks was reached - wait until all player's tasks are finished to start a new one
  """
 
+import asyncio
 import logging
+
+import uvloop
 
 from game import settings
 from game.scheduler.init import main as initer
 from game.scheduler.redis import Redis
 
+asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
 logging.basicConfig(level=settings.LOGGING_LEVEL)
 
 
-async def main():
+async def daemon():
     redis = await Redis.connect()
 
     task1 = redis.periodically_create_tasks()
@@ -29,9 +33,10 @@ async def main():
     await asyncio.gather(task1, task2)
 
 
-if __name__ == '__main__':
-    import asyncio
-    import uvloop
-    asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+def main():
     asyncio.run(initer())
-    asyncio.run(main())
+    asyncio.run(daemon())
+
+
+if __name__ == '__main__':
+    main()

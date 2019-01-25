@@ -40,7 +40,7 @@ async def get_player_tasks_v1(conn, pid):
     pid_tasks = [key async for key in conn.iscan(match=match, count=5_000)]
     logging.debug(f"pid_tasks: {pid} {pid_tasks}")
 
-    logging.info(f"--TIME-- get_player_tasks_v1: {time.time() - t0}")
+    logging.debug(f"--TIME-- get_player_tasks_v1: {time.time() - t0}")
     return pid_tasks
 
 
@@ -51,7 +51,7 @@ async def get_player_tasks_v2(conn, pid):
     pid_tasks = await conn.lrange(pid_tasks_name, 0, -1)
     logging.debug(f"pid_tasks: {pid} {pid_tasks}")
 
-    logging.info(f"--TIME-- get_player_tasks_v2: {time.time() - t0}")
+    logging.debug(f"--TIME-- get_player_tasks_v2: {time.time() - t0}")
     return pid_tasks
 
 
